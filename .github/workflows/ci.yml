@@ -41,15 +41,16 @@ jobs:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
           set -euo pipefail
-          # Start server in background with Doppler-injected env
-          doppler run -- bash -lc 'node src/index.js &' 
-          pid=$!
-          # Give it a moment to boot
-          sleep 3
-          # Hit health endpoint
-          curl -fsS http://localhost:3000/health | jq .
+          # Start server in background with Doppler-injected env and persist PID
+          doppler run -- bash -lc 'node src/index.js & echo $! > server.pid'
+          # Retry /health until it responds or timeout
+          for i in $(seq 1 15); do
+            if curl -fsS http://localhost:3000/health; then
+              ok=1; break; fi; sleep 1;
+          done
+          test -n "${ok:-}"
           # Stop server
-          kill $pid || true
+          kill "$(cat server.pid)" || true
       - name: Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
         with:
