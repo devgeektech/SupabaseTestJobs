@@ -17,8 +17,12 @@ jobs:
           cache: npm
       - name: Install deps
         run: npm ci
-      - name: Install Doppler
-        run: curl -Ls https://cli.doppler.com/install.sh | sh
+      - name: Install Doppler CLI
+        run: |
+          curl -Ls https://github.com/DopplerHQ/cli/releases/latest/download/doppler_linux_amd64.tar.gz | tar xz
+          mv doppler ~/.local/bin/doppler
+          chmod +x ~/.local/bin/doppler
+          echo "~/.local/bin" >> $GITHUB_PATH
       - name: Build with secrets
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
