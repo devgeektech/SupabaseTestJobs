@@ -21,8 +21,7 @@ jobs:
         run: npm ci
 
       - name: Install Doppler CLI
-        run: |
-          curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh
+        uses: dopplerhq/cli-action@v1
 
       - name: Build with secrets
         env:
@@ -67,4 +66,5 @@ jobs:
       - name: TruffleHog scan
         uses: trufflesecurity/trufflehog@v3.90.6
         with:
-          args: filesystem . --only-verified --fail
+          path: .
+          extra_args: "--only-verified --fail"
