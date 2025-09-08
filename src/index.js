@@ -24,7 +24,8 @@ app.use("/ai", aiRouter);
 // Simple CRUD routes
 
 // Supabase-backed user profiles
-app.use("/users", usersRouter);
+app.use("/users", usersRouter)
+
 
 // Supabase email/password auth routes
 app.use("/auth", authRouter);
