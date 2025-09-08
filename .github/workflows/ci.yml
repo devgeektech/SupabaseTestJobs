@@ -54,8 +54,8 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --redact -v
-      - name: TruffleHog scan
-        uses: trufflesecurity/trufflehog@v3
-        with:
-          path: .
-          extra_args: "--only-verified --fail"
+      - name: Install TruffleHog CLI
+        run: python3 -m pip install --user --upgrade trufflehog
+      - name: TruffleHog scan (CLI)
+        run: |
+          ~/.local/bin/trufflehog filesystem . --only-verified --fail
