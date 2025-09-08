@@ -11,26 +11,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
       - name: Install deps
         run: npm ci
+
       - name: Install Doppler CLI
         run: |
           curl -Ls https://github.com/DopplerHQ/cli/releases/latest/download/doppler_linux_amd64.tar.gz | tar xz
+          mkdir -p ~/.local/bin
           mv doppler ~/.local/bin/doppler
           chmod +x ~/.local/bin/doppler
-          echo "~/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Build with secrets
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: doppler run -- npm run build
+
       - name: Test with secrets
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: doppler run -- npm test -- --ci
+
       - name: Verify secrets injected (redacted)
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
@@ -40,25 +47,27 @@ jobs:
             echo "HAS_RC_KEY=${REVENUECAT_SECRET_API_KEY:+yes}";
             echo "HAS_FCM_CREDS=${FIREBASE_SERVICE_ACCOUNT_B64:+yes}";
           '
+
       - name: Smoke test /health
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
           set -euo pipefail
-          # Start server in background with Doppler-injected env and persist PID
           doppler run -- bash -lc 'node src/index.js & echo $! > server.pid'
-          # Retry /health until it responds or timeout
           for i in $(seq 1 15); do
             if curl -fsS http://localhost:3000/health; then
-              ok=1; break; fi; sleep 1;
+              ok=1; break; 
+            fi
+            sleep 1
           done
           test -n "${ok:-}"
-          # Stop server
           kill "$(cat server.pid)" || true
+
       - name: Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --redact -v
+
       - name: TruffleHog scan
         uses: trufflesecurity/trufflehog@v3.90.6
         with:
