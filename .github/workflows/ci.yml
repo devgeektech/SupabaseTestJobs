@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-test:
@@ -26,6 +27,29 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: doppler run -- npm test -- --ci
+      - name: Verify secrets injected (redacted)
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          doppler run -- bash -lc '
+            echo "HAS_SENTRY_DSN=${SENTRY_DSN:+yes}";
+            echo "HAS_RC_KEY=${REVENUECAT_SECRET_API_KEY:+yes}";
+            echo "HAS_FCM_CREDS=${FIREBASE_SERVICE_ACCOUNT_B64:+yes}";
+          '
+      - name: Smoke test /health
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Start server in background with Doppler-injected env
+          doppler run -- bash -lc 'node src/index.js &' 
+          pid=$!
+          # Give it a moment to boot
+          sleep 3
+          # Hit health endpoint
+          curl -fsS http://localhost:3000/health | jq .
+          # Stop server
+          kill $pid || true
       - name: Gitleaks scan
         uses: gitleaks/gitleaks-action@v2
         with:
