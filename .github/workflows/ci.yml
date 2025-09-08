@@ -22,11 +22,7 @@ jobs:
 
       - name: Install Doppler CLI
         run: |
-          curl -Ls https://github.com/DopplerHQ/cli/releases/latest/download/doppler_linux_amd64.tar.gz | tar xz
-          mkdir -p ~/.local/bin
-          mv doppler ~/.local/bin/doppler
-          chmod +x ~/.local/bin/doppler
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh
 
       - name: Build with secrets
         env:
