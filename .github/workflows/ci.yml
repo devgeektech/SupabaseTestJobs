@@ -20,6 +20,30 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Lint micro-actions dataset
+        run: |
+          set -euo pipefail
+          npm run -s lint:micro-actions | tee micro_actions_lint.txt
+          grep -Eo 'Checksum \(sha256 of sorted IDs\): [0-9a-f]+' micro_actions_lint.txt | sed 's/^Checksum (sha256 of sorted IDs): //' > micro_actions_checksum.txt
+          echo "### Micro-actions Lint Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Checksum (sha256 of sorted IDs): \`$(cat micro_actions_checksum.txt)\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Show canonical sample row
+        run: |
+          echo "Canonical CSV sample row (header + row):"
+          cat data/canonical_sample_row.csv
+
+      - name: Upload lint outputs and sample CSV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: micro-actions-artifacts
+          path: |
+            micro_actions_lint.txt
+            micro_actions_checksum.txt
+            data/canonical_sample_row.csv
+
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v1
 

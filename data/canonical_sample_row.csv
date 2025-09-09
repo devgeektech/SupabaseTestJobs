@@ -1,0 +1,2 @@
+utc_ts,local_datetime,timezone,primary_emotion,secondary_emotion,energy_level,context,action_id,action_name,action_category,favorited,duration_seconds,completed,skipped,reflection,note_text
+1725863400,2024-09-09T09:30:00,America/Los_Angeles,calm,focused,7,work_session,act_0001,Action 1,general,false,60,true,false,"Felt productive after a short reset.","Quick breathing exercise before deep work."
